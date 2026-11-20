@@ -1,0 +1,58 @@
+{% extends "blog/base.html" %}
+
+{% block title %}{{ post.title }}{% endblock %}
+{% block meta_description %}{{ post.meta_description|default:post.excerpt }}{% endblock %}
+
+{% block content %}
+<article>
+    <header>
+        <h1>{{ post.title }}</h1>
+        <p class="text-muted">
+            By {{ post.author.username }} on {{ post.published_at|date:"M d, Y" }}
+            {% if post.category %} in <a href="?category={{ post.category.slug }}">{{ post.category.name }}</a>{% endif %}
+        </p>
+        {% for tag in post.tags.all %}
+            <span class="badge bg-secondary"><a href="?tag={{ tag.slug }}">{{ tag.name }}</a></span>
+        {% endfor %}
+    </header>
+
+    <div class="mt-4">
+        {{ post.content_as_markdown|safe }}
+    </div>
+
+    <hr>
+
+    <h3>Comments ({{ comments.count }})</h3>
+    {% if comments %}
+        {% for comment in comments %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <strong>{{ comment.author_name }}</strong>
+                <span class="text-muted float-end">{{ comment.created_at|date:"M d, Y" }}</span>
+                <p>{{ comment.content }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>No comments yet.</p>
+    {% endif %}
+
+    <h4>Add a comment</h4>
+    <form method="post" action="{% url 'blog:add_comment' post.slug %}">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label">Name</label>
+            <input type="text" name="author_name" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" name="author_email" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Comment</label>
+            <textarea name="content" class="form-control" rows="4" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit Comment</button>
+    </form>
+</article>
+{% endblock %}

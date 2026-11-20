@@ -1,0 +1,16 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - run: uv sync --dev
+      - run: uv run python manage.py migrate --settings=cms.settings_test
+      - run: uv run ruff check blog cms tests manage.py
+      - run: uv run ruff format --check blog cms tests manage.py
+      - run: uv run mypy blog cms
+      - run: uv run pytest --cov=blog --cov=cms --cov-report=term-missing
